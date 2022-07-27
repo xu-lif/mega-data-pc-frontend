@@ -11,13 +11,63 @@ console.log("THREE", THREE);
 //必须引入Threejs脚本才能用
 
 const dataList = [
-  [118.693328, 33.945154],
-  [117.993328, 33.345154],
-  [118.693328, 33.145154],
-  [117.693328, 33.945154],
-  [118.293328, 32.945154],
-  [119.693328, 33.945154],
+  {
+    id: 1,
+    type: 'creater',
+    child: [2, 6],
+    position: [118.693328, 33.945154]
+  },
+  {
+    id: 2,
+    type: 'consumer',
+    child: [3, 4],
+    position: [117.993328, 33.345154],
+  },
+  {
+    id: 3,
+    type: 'consumer',
+    child: [6],
+    position: [118.693328, 33.145154],
+  },
+  {
+    id: 4,
+    type: 'consumer',
+    child: [],
+    position: [117.693328, 33.945154],
+  },
+  {
+    id: 5,
+    type: 'creater',
+    child: [2, 3],
+    position: [118.293328, 32.945154],
+  },
+  {
+    id: 6,
+    type: 'consumer',
+    child: [],
+    position: [119.693328, 33.945154],
+  }
 ];
+
+const getLineLayerData = (data) => {
+  const rArray = []
+  if (data && data.length) {
+    const dataObj = data.reduce((total, item) => {
+      total[item.id] = item
+      return total
+    }, {})
+    data.forEach(val => {
+      if (val.child && val.child.length) {
+        val.child.forEach(valKey => {
+          if (dataObj[valKey]) {
+            rArray.push([val.position, dataObj[valKey].position])
+          }
+        })
+      }
+    })
+  }
+  return rArray
+}
 
 const tubeDataList = [
   [
@@ -33,6 +83,11 @@ const tubeDataList = [
     [118.293328, 32.945154],
   ],
 ];
+
+// 生产者颜色
+const CREATER_COLOR = '#5CDBD3'
+// 消费者颜色
+const CONSUMER_COLOR = '#FF85C0'
 
 const Home = () => {
   const mapRef = useRef(null);
@@ -155,12 +210,14 @@ const Home = () => {
   };
 
   // 创建点
-  const drawPoint = (point) => {
+  const drawPoint = (point, {
+    type
+  }) => {
     //首先新建一个长宽高为3的正方体
-    const geometry = new THREE.BoxGeometry(5500, 5500, 100);
+    const geometry = new THREE.BoxGeometry(4000, 4000, 20);
     //新建材质
     const material = new THREE.MeshBasicMaterial({
-      color: "red",
+      color: type === 'creater' ? CREATER_COLOR : CONSUMER_COLOR,
       flatShading: true,
       wireframe: false,
     });
@@ -175,9 +232,9 @@ const Home = () => {
   useEffect(() => {
     mapRef.current = new BMapGL.Map("map_container");
     mapRef.current.enableKeyboard();
-    mapRef.current.enableScrollWheelZoom();
+    // mapRef.current.enableScrollWheelZoom();+
     mapRef.current.enableInertialDragging();
-    mapRef.current.enableContinuousZoom();
+    // mapRef.current.enableContinuousZoom();
     //设置中心点和缩放大小
     mapRef.current.centerAndZoom(new BMapGL.Point(118.693328, 33.945154), 10);
     //相机倾斜角度-- 默认相机视角是从上往下
@@ -196,40 +253,137 @@ const Home = () => {
       map: mapRef.current,
     });
     // threeLayer.current = new mapvgl.ThreeLayer();
-    lineLayer.current = new mapvgl.LineRainbowLayer({
-      style: "normal", // road, arrow, normal
-      width: 15,
-      color: ["#ff0", "#fd0", "#f90", "#f00"],
-      data: [
-        {
-          geometry: {
-            type: "LineString",
-            coordinates: [
-              // [106.46511, 29.57895],
-              // [106.47775, 29.5885],
-              // [106.47933, 29.59642],
-              // [106.48825, 29.6091],
-              [118.693328, 33.945154],
-              [117.993328, 33.345154],
-              [118.693328, 33.145154],
-              [117.693328, 33.945154],
-              [118.293328, 32.945154],
-              [119.693328, 33.945154],
-            ],
+    const lineLayerData = getLineLayerData(dataList)
+    console.log('lineLayerData', lineLayerData)
+    lineLayerData.forEach(valData => {
+      const singleLineLayer = new mapvgl.LineRainbowLayer({
+        style: "normal", // road, arrow, normal
+        width: 5,
+        color: ["#2C8295", "#8C6379"],
+        data: [
+          {
+            geometry: {
+              type: "LineString",
+              coordinates: valData,
+            },
           },
-        },
-      ],
-    });
-    view.current.addLayer(lineLayer.current);
+        ],
+      });
+      view.current.addLayer(singleLineLayer);
+    })
+    
+    // view.current.addLayer(threeLayer.current)
 
-    // dataList.forEach((val) => {
-    //   if (val && val.length > 1) {
-    //     const transformPoint = transformMercatorProjection(val[0], val[1]);
-    //     const cube = drawPoint(transformPoint);
-    //     joinToThreeLayer(cube);
-    //   }
+    // const pointerListLayer = new mapvgl.MarkerListLayer({
+    //   enablePicked: true,
+    //     // autoSelect: true,
+    //     // selectedColor: '#00f', // 选中项颜色
+    //     onClick: e => {console.log(e)}
     // });
+    // 呼吸圆圈层
+    var breathLayer = new mapvgl.CircleLayer({
+      // 绘制带波纹扩散的圆
+      type: 'wave',
+      // 扩散半径，支持直接设置和回调两种形式
+      radius: r => 1.6 * r,
+      // 周期影响扩散速度，越小越快
+      duration: 1 / 3,
+      // 拖尾影响波纹数，越大越多
+      trail: 4
+  });
+  var textLayer = new mapvgl.TextLayer({
+    color: '#fff',
+    fontFamily: 'Microsoft Yahei',
+    fontSize: 14,
+    flat: false,
+    collides: true,
+    offset: [0, 0],
+    padding: [2, 2],
+    margin: [0, 0],
+    offset: [0, -24],
+   
+});
+//   var iconLayer = new mapvgl.IconLayer({
+//     width: 100 / 2,
+//     height: 153 / 2,
+//     // offset: [0, - 153 / 2 / 2],
+//     icon: <div style={{
+//       color: '#fff',
+//       width: '40px',
+//       height: '80px',
+//       background:' rgba(0, 0, 0, 1)'
+//     }}>
+//       12
+//     </div>,
+//     enablePicked: true, // 是否可以拾取
+//     // selectedIndex: -1, // 选中项
+//     // selectedColor: '#ff0000', // 选中项颜色
+//     autoSelect: true, // 根据鼠标位置来自动设置选中项
+//     onClick: (e) => { // 点击事件
+//         console.log(e)
+//     },
+// });
+  view.current.addLayer(breathLayer);
+  view.current.addLayer(textLayer)
+  // breathLayer.setData(data.slice(18, 25));
 
+    const pointsData = []
+    // const iconsData = []
+    const textData = []
+    dataList.forEach((val) => {
+      if (val && val.position && val.position.length > 1) {
+        // const transformPoint = transformMercatorProjection(val.position[0], val.position[1]);
+        pointsData.push({
+          geometry: {
+              type: 'Point',
+              coordinates: val.position
+          },
+          // 可对单个点设置颜色和大小
+          color: val.type === 'creater' ? '#15758a' : '#e8298f',
+          size: 8
+      })
+    //   iconsData.push({
+    //     geometry: {
+    //         type: 'Point',
+    //         coordinates: val.position
+    //     }
+
+    // })
+    textData.push( {
+      geometry: {
+          type: 'Point',
+          coordinates: val.position
+      },
+      properties: {
+              text: '文字' // 展示的文字
+      }
+  })
+      //   pointsData.push({
+      //     geometry: {
+      //         type: 'Point',
+      //         coordinates: val.position
+      //     },
+      //     properties: {
+      //       fillColor: 'yellow',
+      //       fillSize: 10,
+      //       fillBorderColor: val.type === 'creater' ? '#15758a' : '#e8298f',
+      //       fillBorderWidth: 20,
+      //       shadowColor: val.type === 'creater' ? 'rgba(84, 134, 145, 0.2)' : 'rgba(140, 99, 121, 0.2)',
+      //       shadowSize: 25,
+      //       shadowBorderColor: val.type === 'creater' ? 'rgb(84, 134, 145)' : 'rgb(140, 99, 121)',
+      //       shadowBorderWidth: 4,
+      //     }
+      // })
+
+        // const cube = drawPoint(transformPoint, val);
+        // joinToThreeLayer(cube);
+      }
+    });
+
+    // view.current.addLayer(pointerListLayer);
+    breathLayer.setData(pointsData);
+    textLayer.setData(textData)
+    // iconLayer.setData(iconsData)
     // tubeDataList.forEach((val) => {
     //   if (val && val.length > 1) {
     //     const points = val.map((item) => {
