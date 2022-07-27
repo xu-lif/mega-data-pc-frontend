@@ -1,84 +1,325 @@
 import styles from "./index.less";
-import { Map, MapvglView, MapvglLayer,Marker, Arc, NavigationControl, InfoWindow } from "react-bmapgl";
 import { useRef } from "react";
 import { useEffect } from "react";
-import ConfigJson from './map_styles.json'
+import mapConfigJson from "./map_styles.json";
 
-const { mapvgl, BMapGL } = window 
-console.log('mapvgl', mapvgl, BMapGL)
+const { BMapGL, mapvgl, THREE } = window;
+//BMapGL是3d地图的基础api
+//mapvgl是地图的图层api
+console.log("THREE", THREE);
+// const THREE = mapvgl.THREE;
+//必须引入Threejs脚本才能用
 
-const THREE = mapvgl.THREE
+const dataList = [
+  [118.693328, 33.945154],
+  [117.993328, 33.345154],
+  [118.693328, 33.145154],
+  [117.693328, 33.945154],
+  [118.293328, 32.945154],
+  [119.693328, 33.945154],
+];
+
+const tubeDataList = [
+  [
+    [118.693328, 33.945154],
+    [117.993328, 33.345154],
+  ],
+  [
+    [117.993328, 33.345154],
+    [118.693328, 33.145154],
+  ],
+  [
+    [118.693328, 33.145154],
+    [118.293328, 32.945154],
+  ],
+];
 
 const Home = () => {
   const mapRef = useRef(null);
-  const mapvglView = useRef(null)
-  const threeLayer = useRef(null)
-  useEffect(() => {
-  //   var view = new mapvgl.View({
-  //     map: mapRef.current
-  // });
-  
-  // var threeLayer = new mapvgl.ThreeLayer();
-  // view.addLayer(threeLayer);
-  console.log('mapvglView.current', mapvglView.current)
-  // mapvglView.current.addLayer(threeLayer.current)
+  const view = useRef(null);
+  const threeLayer = useRef(null);
+  const lineLayer = useRef(null);
 
-//   var projection = mapvgl.MercatorProjection;
-// var point = projection.convertLL2MC(new BMapGL.Point(116.403928,39.914972));
-// var point2 = projection.convertLL2MC(new BMapGL.Point(116.493759,39.914972));
-  
-//   var geometry = new THREE.BoxGeometry(5500, 5500, 5000);
-//   var material =  new THREE.MeshBasicMaterial( { color: 0xff0000, flatShading: true, wireframe: false } );
-//   var cube = new THREE.Mesh(geometry, material);
-//   cube.position.x = point.lng;
-//   cube.position.y = point.lat;
-//   cube.position.z = 2500;
-//   threeLayer.add(cube);
-  
-//   var geometry = new THREE.BoxGeometry(5500, 5500, 5000);
-//   var material =  new THREE.MeshBasicMaterial( { color: 0xffffff, flatShading: true, wireframe: true } );
-//   var cube = new THREE.Mesh(geometry, material);
-//   cube.position.x = point.lng;
-//   cube.position.y = point.lat;
-//   cube.position.z = 2500;
-//   threeLayer.add(cube);
-  
-//   var geometry = new THREE.BoxGeometry(20, 20, 20);
-//   var material =  new THREE.MeshBasicMaterial( { color: 0xff0000, flatShading: true, wireframe: false } );
-//   var cube = new THREE.Mesh(geometry, material);
-//   cube.position.z = 10;
-  
-//   threeLayer.add(cube, point2);
-  }, [])
+  // 坐标点转换
+  // 要将百度的坐标点转换为gps坐标点
+  const transformMercatorProjection = (x, y) => {
+    const projection = mapvgl.MercatorProjection;
+    const point = projection.convertLL2MC(new BMapGL.Point(x, y));
+    return point;
+  };
+
+  // 将模型加入至threeLayer图层中
+  const joinToThreeLayer = (geometry) => {
+    if (threeLayer.current && geometry) {
+      threeLayer.current.add(geometry);
+    }
+  };
+
+  // 创建曲线管道
+  const drawTube = (data) => {
+    // let texture = new THREE.TextureLoader().load("texture.png");
+    // texture.wrapS = texture.wrapT = THREE.RepeatWrapping; //每个都重复
+    // texture.repeat.set(1, 1);
+    // texture.needsUpdate = true;
+    var canvas = document.createElement("canvas");
+    canvas.width = 50;
+    canvas.height = 50;
+
+    var context = canvas.getContext("2d");
+    var gradient = context.createLinearGradient(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
+    gradient.addColorStop(0, "red");
+    // gradient.addColorStop(0.5, "green");
+    gradient.addColorStop(1, "green");
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, canvas.width, canvas.height);
+
+    var texture = new THREE.Texture(canvas);
+    texture.needsUpdate = true;
+
+    let material = new THREE.MeshBasicMaterial({
+      map: texture,
+      // color: "red",
+      side: THREE.BackSide,
+      transparent: true,
+    });
+
+    console.log("data", data);
+    // 创建顶点数组
+    let points = [
+      new THREE.Vector3(data[0].lng, data[0].lat, 0),
+      new THREE.Vector3(data[1].lng, data[1].lat, 0),
+      // new THREE.Vector3(10, 0, 10),
+      // new THREE.Vector3(0, 0, 10),
+    ];
+
+    console.log("points", points);
+
+    // CatmullRomCurve3创建一条平滑的三维样条曲线
+    let curve = new THREE.CatmullRomCurve3(points); // 曲线路径
+
+    // 创建管道
+    let tubeGeometry = new THREE.TubeGeometry(curve, 200, 500);
+
+    let mesh = new THREE.Mesh(tubeGeometry, material);
+
+    threeLayer.current.add(mesh);
+
+    function animate() {
+      // 一定要在此函数中调用
+      // threeLayer.current.add(mesh);
+      if (texture) texture.offset.x -= 500;
+      requestAnimationFrame(animate);
+    }
+
+    animate();
+  };
+
+  // 创建线
+  const drawLine = (data) => {
+    //声明的几何体， 里边有个vertices参数可以用来存放点
+    var geometry = new THREE.Geometry();
+    //LineBasicMaterial(parameters)//basic翻译：基础//Material翻译：原料
+    //Parameters:是一个定义材质外观的对象，它包含多个属性来定义材质，这些属性是//翻译：参数
+    //Color:线条的颜色，用16进制来表示，默认的颜色是白色。
+    //Linewidth
+    //Linecap:线条两端的外观，默认是圆角端点，当线条较粗的时候才看得出效果//cap翻译：帽子
+    //Linejoin:两个线条的连接点处的外观，默认是round 圆角//join翻译：加入
+    //VertexColors:定义线条材质是否使用顶点元素，这是一个boolean值。意思是线条各部分的颜色根据顶点的颜色来进行插值。//vertex翻译：顶点
+    //Fog:定义材质的颜色是否受全局雾效的影响。//翻译：雾
+    var material = new THREE.LineBasicMaterial({
+      vertexColors: true,
+    });
+    //定义两种颜色分别是两个端点的颜色
+    var color1 = new THREE.Color("#5CDBD3"),
+      color2 = new THREE.Color("#FF85C0");
+    //线的材质可以由两点的颜色决定
+    var p1 = new THREE.Vector3(data[0].lng, data[0].lat, 100);
+    var p2 = new THREE.Vector3(data[1].lng, data[1].lat, -100);
+    console.log("p1--p2", p1, p2);
+    // p1.set(-100, 0, 100);
+    // p2.set(100, 0, -100);
+    geometry.vertices.push(p1);
+    geometry.vertices.push(p2);
+    geometry.colors.push(color1, color2);
+    //定义线条 这里会传进去三个参数
+    //第一个是几何体geometry，里面包含两个顶点和顶点颜色
+    //第二个是线条的材质
+    //第三个是一组点的连接方式
+    return new THREE.Line(geometry, material, THREE.LinePieces);
+  };
+
+  // 创建点
+  const drawPoint = (point) => {
+    //首先新建一个长宽高为3的正方体
+    const geometry = new THREE.BoxGeometry(5500, 5500, 100);
+    //新建材质
+    const material = new THREE.MeshBasicMaterial({
+      color: "red",
+      flatShading: true,
+      wireframe: false,
+    });
+    //创建一个Mesh对象，传入模型和材质
+    var cube = new THREE.Mesh(geometry, material);
+    //调整位置，应该使用转换后的坐标
+    cube.position.x = point.lng;
+    cube.position.y = point.lat;
+    return cube;
+  };
+
+  useEffect(() => {
+    mapRef.current = new BMapGL.Map("map_container");
+    mapRef.current.enableKeyboard();
+    mapRef.current.enableScrollWheelZoom();
+    mapRef.current.enableInertialDragging();
+    mapRef.current.enableContinuousZoom();
+    //设置中心点和缩放大小
+    mapRef.current.centerAndZoom(new BMapGL.Point(118.693328, 33.945154), 10);
+    //相机倾斜角度-- 默认相机视角是从上往下
+    // mapRef.current.setTilt(80);
+    //相机旋转角度 -- 默认朝着正北方向
+    mapRef.current.setHeading(0);
+    // 设置地图个性化样式
+    mapRef.current.setMapStyleV2({ styleJson: mapConfigJson });
+    /**
+     * viewLayer是图层管理容器
+     * threeLayer是three层相关的容器
+     */
+    // 使用threeLayer创建3D图层
+    // 首先创建场景，用于添加图层
+    view.current = new mapvgl.View({
+      map: mapRef.current,
+    });
+    // threeLayer.current = new mapvgl.ThreeLayer();
+    lineLayer.current = new mapvgl.LineRainbowLayer({
+      style: "normal", // road, arrow, normal
+      width: 15,
+      color: ["#ff0", "#fd0", "#f90", "#f00"],
+      data: [
+        {
+          geometry: {
+            type: "LineString",
+            coordinates: [
+              // [106.46511, 29.57895],
+              // [106.47775, 29.5885],
+              // [106.47933, 29.59642],
+              // [106.48825, 29.6091],
+              [118.693328, 33.945154],
+              [117.993328, 33.345154],
+              [118.693328, 33.145154],
+              [117.693328, 33.945154],
+              [118.293328, 32.945154],
+              [119.693328, 33.945154],
+            ],
+          },
+        },
+      ],
+    });
+    view.current.addLayer(lineLayer.current);
+
+    // dataList.forEach((val) => {
+    //   if (val && val.length > 1) {
+    //     const transformPoint = transformMercatorProjection(val[0], val[1]);
+    //     const cube = drawPoint(transformPoint);
+    //     joinToThreeLayer(cube);
+    //   }
+    // });
+
+    // tubeDataList.forEach((val) => {
+    //   if (val && val.length > 1) {
+    //     const points = val.map((item) => {
+    //       return transformMercatorProjection(item[0], item[1]);
+    //     });
+    //     const cube = drawTube(points);
+    //     joinToThreeLayer(cube);
+    //   }
+    // });
+
+    // 开始创建threeLayer 模型
+
+    //最后将配置完成的正方体加入Threejs图层
+    // threeLayer.current.add(cube);
+    // console.log("threeLayer.current", threeLayer.current);
+
+    // drawTube();
+    // setTimeout(() => {
+    //   material.color = "green";
+    //   threeLayer.current.renderer.render();
+    // }, 2000);
+
+    //   var view = new mapvgl.View({
+    //     map: mapRef.current
+    // });
+    // var threeLayer = new mapvgl.ThreeLayer();
+    // view.addLayer(threeLayer);
+    // mapvglView.current.addLayer(threeLayer.current)
+    //   var projection = mapvgl.MercatorProjection;
+    // var point = projection.convertLL2MC(new BMapGL.Point(116.403928,39.914972));
+    // var point2 = projection.convertLL2MC(new BMapGL.Point(116.493759,39.914972));
+    //   var geometry = new THREE.BoxGeometry(5500, 5500, 5000);
+    //   var material =  new THREE.MeshBasicMaterial( { color: 0xff0000, flatShading: true, wireframe: false } );
+    //   var cube = new THREE.Mesh(geometry, material);
+    //   cube.position.x = point.lng;
+    //   cube.position.y = point.lat;
+    //   cube.position.z = 2500;
+    //   threeLayer.add(cube);
+    //   var geometry = new THREE.BoxGeometry(5500, 5500, 5000);
+    //   var material =  new THREE.MeshBasicMaterial( { color: 0xffffff, flatShading: true, wireframe: true } );
+    //   var cube = new THREE.Mesh(geometry, material);
+    //   cube.position.x = point.lng;
+    //   cube.position.y = point.lat;
+    //   cube.position.z = 2500;
+    //   threeLayer.add(cube);
+    //   var geometry = new THREE.BoxGeometry(20, 20, 20);
+    //   var material =  new THREE.MeshBasicMaterial( { color: 0xff0000, flatShading: true, wireframe: false } );
+    //   var cube = new THREE.Mesh(geometry, material);
+    //   cube.position.z = 10;
+    //   threeLayer.add(cube, point2);
+  }, []);
   return (
-    <div className={styles.wrap} style={{
-      heigh: '100vh'
-    }}>
-      <Map
-        ref={mapRef}
-        center={{ lng: 118.693328, lat: 33.945154 }}
-        zoom="11"
+    <div>
+      <div
+        id="map_container"
         style={{
-          position: 'relative', height: '100vh'
+          height: "100vh",
         }}
-        mapStyleV2={{     
-          styleJson: ConfigJson
-        }}
-      >
-        <MapvglView effects={['bright']} ref={ref => {
-          console.log('ref.view', ref.view)
-          mapvglView.current = ref.view
-        }}>
-          <MapvglLayer
-            type="ThreeLayer"
-            getMethods={(data) => {
-              console.log('data', data)
-              threeLayer.current = data.setViewport()
-            }}
-          />
-        </MapvglView>
-      </Map>
+      ></div>
+      {/* <div id="canvas"></div> */}
     </div>
+
+    // <div className={styles.wrap} style={{
+    //   heigh: '100vh'
+    // }}>
+    //   <Map
+    //     ref={mapRef}
+    //     center={{ lng: 118.693328, lat: 33.945154 }}
+    //     zoom="11"
+    //     style={{
+    //       position: 'relative', height: '100vh'
+    //     }}
+    //     mapStyleV2={{
+    //       styleJson: ConfigJson
+    //     }}
+    //   >
+    //     <MapvglView effects={['bright']} ref={ref => {
+    //       console.log('ref.view', ref.view)
+    //       mapvglView.current = ref.view
+    //     }}>
+    //       <MapvglLayer
+    //         type="ThreeLayer"
+    //         getMethods={(data) => {
+    //           console.log('data', data)
+    //           threeLayer.current = data.setViewport()
+    //         }}
+    //       />
+    //     </MapvglView>
+    //   </Map>
+    // </div>
   );
 };
 
