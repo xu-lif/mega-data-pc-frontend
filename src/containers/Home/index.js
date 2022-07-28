@@ -1,4 +1,7 @@
 import Map from "./Map";
+import styles from './index.less'
+
+console.log(styles)
 
 const Home = () => {
   return (
@@ -8,6 +11,9 @@ const Home = () => {
         width: "100%",
       }}
     >
+      <div className={styles.headerWrap}>
+        头部
+      </div>
       <Map />
     </div>
   );
