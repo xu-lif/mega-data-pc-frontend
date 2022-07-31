@@ -4,12 +4,105 @@ import styled from "styled-components";
 const BodyWrap = styled.div`
   height: 100%;
   width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  grid-column-gap: 16px;
+  padding: 16px;
 `;
+const ItemWrap = styled.div`
+  display: flex;
+  align-items: center;
+  & > div:nth-of-type(1) {
+    width: 48px;
+    height: 48px;
+    margin-right: 16px;
+    background-size: contain; 
+    background-repeat: no-repeat;
+    background-position: center;
+  }
+  & > div:nth-of-type(2) {
+    font-size: 16px;
+    line-height:26px;
+    color: rgba(250, 250, 250, 0.64);
+    & > div:nth-of-type(1) {
+      /* margin-bottom: 2px; */
+    }
+    &  i {
+      font-style: normal;
+      font-size: 26px;
+      line-height: 40px;
+      color: rgba(250, 250, 250, 0.87);
+      font-weight: 500;
+      margin-right: 8px;
+    }
+  }
+`
 
 const LeftFirst = () => {
   return (
     <BoxLayout title="容量指标">
-      <BodyWrap></BodyWrap>
+      <BodyWrap>
+        <ItemWrap>
+          <div style={{
+            backgroundImage: `url(${'images/dianchang_num.svg'})`
+          }}/>
+          <div>
+            <div>
+              电厂数量
+            </div>
+            <div>
+            <i>432</i>
+            家
+            </div>
+          </div>
+        </ItemWrap>
+        <ItemWrap>
+          <div style={{
+            backgroundImage: `url(${'images/dianji_num.svg'})`
+          }}/>
+          <div>
+            <div>
+              机组数量
+            </div>
+          <div>
+            <i>6543</i>
+            户
+          </div>
+          </div>
+        </ItemWrap>
+        <ItemWrap>
+          <div style={{
+            backgroundImage: `url(${'images/fadian_unit.svg'})`
+          }}/>
+          <div>
+            <div>
+            发电单元
+            </div>
+            <div>
+            <i>6463</i>
+            台
+          </div>
+          </div>
+
+        </ItemWrap>
+        <ItemWrap>
+          <div style={{
+            backgroundImage: `url(${'images/rongliang.svg'})`
+          }}/>
+          <div>
+            <div>
+            额定容量
+            </div>
+            <div>
+            <i>866</i>
+            kw
+          </div>
+          </div>
+
+        </ItemWrap>
+
+      </BodyWrap>
     </BoxLayout>
   );
 };

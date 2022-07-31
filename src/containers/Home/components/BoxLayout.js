@@ -4,25 +4,42 @@ import styled from "styled-components";
 const BoxWrap = styled.div`
   height: 100%;
   width: 100%;
-  border-top: 1px solid #326178;
-  border-bottom: 1px solid #326178;
+  /* border-top: 1px solid #326178; */
+  /* border-bottom: 1px solid #326178; */
   border-radius: 4px;
-  background: #273032;
+  background: rgba(10, 13, 16, 0.3);
+
 `;
 
 const Header = styled.div`
   height: 36px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid #326178;
+  /* border-bottom: 1px solid #326178; */
   font-size: 16px;
   line-height: 36px;
-  color: #b9ced2;
+  color: rgba(255, 255, 255, 0.87);
+  background: rgba(27, 126, 242, 0.14);
+  position: relative;
+  padding-left: 6px;
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -6px;
+    bottom: 0;
+    width: 4px;
+    background: #1B7EF2;
+  }
+  
   & > i {
     display: inline-block;
-    width: 24px;
-    height: 24px;
-    min-width: 24px;
+    width: 0px;
+    height: 0px;
+    /* min-width: 24px; */
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent transparent #29F1FA;
     margin-right: 12px;
     background-size: contain;
     background-repeat: no-repeat;
