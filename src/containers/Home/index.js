@@ -9,6 +9,8 @@ import LeftFour from './components/LeftFour'
 import RightFirst from "./components/RightFirst";
 import RightSecond from "./components/RightSecond";
 
+import CenterMap from './components/CenterMap'
+
 console.log("styles", styles);
 
 const Home = () => {
@@ -34,7 +36,9 @@ const Home = () => {
           <LeftSecond />
           <LeftThird />
         </div>
-        <div className={styles.centerWrap}></div>
+        <div className={styles.centerWrap}>
+          <CenterMap />
+        </div>
         <div className={styles.rightWrap}>
           <RightFirst />
           <RightSecond />

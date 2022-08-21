@@ -281,7 +281,6 @@ const Map = () => {
 
   // 地图加载完成之后，开始创建各种图层
   const addLayerFun = () => {
-    console.log('111')
     const gradualData = createGradualLineView();
     console.log('gradualData', gradualData )
     createScatterPointView();
@@ -312,9 +311,9 @@ const Map = () => {
 
   useEffect(() => {
     createMap();
-    if (mapRef.current) {
-      mapRef.current.on("load", addLayerFun);
-    }
+    // if (mapRef.current) {
+    //   mapRef.current.on("load", addLayerFun);
+    // }
   }, []);
   return (
     <div
