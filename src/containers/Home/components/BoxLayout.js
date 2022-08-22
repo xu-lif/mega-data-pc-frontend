@@ -4,11 +4,14 @@ import styled from "styled-components";
 const BoxWrap = styled.div`
   height: 100%;
   width: 100%;
+  color: #fff;
   /* border-top: 1px solid #326178; */
   /* border-bottom: 1px solid #326178; */
   border-radius: 4px;
   background: rgba(10, 13, 16, 0.3);
-
+  & > div:last-of-type::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const Header = styled.div`
@@ -61,6 +64,7 @@ const BoxLayout = ({ children, title, icon, style = {} }) => {
       <div
         style={{
           height: "calc(100% - 36px)",
+          overflow: 'auto'
         }}
       >
         {children}

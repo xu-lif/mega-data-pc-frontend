@@ -1,19 +1,28 @@
+import { useMemo } from 'react'
+
 import Map from "./Map";
 import styles from "./index.less";
 
 import LeftFirst from "./components/LeftFirst";
-import LeftSecond from './components/LeftSecond'
+import LinesList from './components/LinesList';
+// import LeftSecond from './components/LeftSecond'
 import LeftThird from './components/LeftThird'
-import LeftFour from './components/LeftFour'
+// import LeftFour from './components/LeftFour'
 
 import RightFirst from "./components/RightFirst";
 import RightSecond from "./components/RightSecond";
 
 import CenterMap from './components/CenterMap'
 
-console.log("styles", styles);
+import sourceData, { transformSourceData } from "./data"; 
+
 
 const Home = () => {
+
+  const data = useMemo(() => {
+    return transformSourceData(sourceData)
+  }, [])
+
   return (
     <div
       className={styles.wrap}
@@ -32,17 +41,18 @@ const Home = () => {
       <Map/>
       <div className={styles.bodyWrap}>
         <div className={styles.leftWrap}>
-          <LeftFirst />
-          <LeftSecond />
-          <LeftThird />
+          <LeftFirst data={sourceData.gird_num_info}/>
+          <LinesList lines={data.lines} gridInfo={sourceData.grid_info}/>
+          {/* <LeftThird /> */}
         </div>
         <div className={styles.centerWrap}>
-          <CenterMap />
+          <CenterMap data={data} gridInfo={sourceData.grid_info} gridLayout={sourceData.grid_layout} />
         </div>
         <div className={styles.rightWrap}>
           <RightFirst />
           <RightSecond />
-          <LeftFour />
+          <LeftThird />
+          {/* <LeftFour /> */}
 
           {/* <LeftFirst /> */}
         </div>

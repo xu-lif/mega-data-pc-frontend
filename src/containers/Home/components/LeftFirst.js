@@ -1,5 +1,7 @@
 import BoxLayout from "./BoxLayout";
 import styled from "styled-components";
+import PropTypes from 'prop-types'
+import data from "../data";
 
 const BodyWrap = styled.div`
   height: 100%;
@@ -39,7 +41,9 @@ const ItemWrap = styled.div`
   }
 `
 
-const LeftFirst = () => {
+const LeftFirst = ({
+  data = {},
+}) => {
   return (
     <BoxLayout title="容量指标">
       <BodyWrap>
@@ -49,10 +53,10 @@ const LeftFirst = () => {
           }}/>
           <div>
             <div>
-              电厂数量
+              发电单元数量
             </div>
             <div>
-            <i>432</i>
+            <i>{data.n_gen}</i>
             家
             </div>
           </div>
@@ -63,11 +67,11 @@ const LeftFirst = () => {
           }}/>
           <div>
             <div>
-              机组数量
+              变电站数量
             </div>
           <div>
-            <i>6543</i>
-            户
+            <i>5</i>
+            座
           </div>
           </div>
         </ItemWrap>
@@ -77,10 +81,10 @@ const LeftFirst = () => {
           }}/>
           <div>
             <div>
-            发电单元
+              负载数量
             </div>
             <div>
-            <i>6463</i>
+            <i>{data.n_load}</i>
             台
           </div>
           </div>
@@ -92,11 +96,11 @@ const LeftFirst = () => {
           }}/>
           <div>
             <div>
-            额定容量
+            输电线路数量
             </div>
             <div>
-            <i>866</i>
-            kw
+            <i>{data.n_line}</i>
+            条
           </div>
           </div>
 
@@ -106,5 +110,9 @@ const LeftFirst = () => {
     </BoxLayout>
   );
 };
+
+LeftFirst.propTypes = {
+  data: PropTypes.object
+}
 
 export default LeftFirst;
