@@ -36,15 +36,15 @@ const data = {
                       138.40173,  425.38623,  252.71758,  642.3019,    19.789661, 175.2324,
                       315.52786 ,  76.60076,  307.76926,  109.86134,   52.46547,   99.788956,
                       935.0104,   629.15857 ],
-        "line_v_or" : [142.1,  142.1,   142.1,   142.1,   142.1 ,  142.1,
+        "line_v_or" : [132.1,  124.1,   136.1,   141.1,   140.1 ,  142.1,
                       138.8432,    62,      62,        75,      68.046211,  21.046211,
                       21.052515,  21.575861,  21.423473, 138.8432,   138.8432,   139.63824,
-                      14.840867,  21.046211],
+                      14.840867,  21.046211, 21.046211, 75, 76, 20, 16, 38, 87, 30, 40],
         "line_connectivity_matrix" : [[ 8, -1, -1 ,10 ,-1 ,-1],
                                     [ 8 ,-1, -1, 11, -1, -1],
                                     [ 8, -1, -1, -1, 16, -1],
                                     [ 8, -1, -1 ,19 ,-1, -1],
-                                    [ 8,  5, -1, -1, -1 ,-1]],
+                                    [ 8,  5, 7, -1, -1 ,-1]],
        "gen_info": {
            "gen_p" : [74.8,    73.8,      29.2,    0,    75.578995],
            "gen_q" : [142.1,    142.1,       22,     13.200001, 142.1 ],
@@ -59,7 +59,7 @@ const data = {
             21.052515,  21.43466 ,  21.575861 , 21.423473,  20.71459 ],
             "load_pos_topo_vect" : [ 8, 12, 18, 23, 29, 39, 42, 45, 48, 52 ,55],
         }
-
+ 
     }
 }
 
@@ -109,7 +109,6 @@ const transformSourceData = (sourceData) => {
 				if (rowList.length) {
 					rowList.forEach((colVal, colIndex) => {
 						if ( Math.abs(colVal) === 1) { //表示rowIndex和colIndex之前存在连接关系
-							console.log('有关系的')
 							lines.push({
 								source: nodes[`sub_${rowIndex}`] || {},
 								target: nodes[`sub_${colIndex}`] || {}
@@ -127,7 +126,40 @@ const transformSourceData = (sourceData) => {
 	}
 }
 
+const randomValue = (value) => {
+  const judgeRandomValue =  parseInt((Math.random() * 10))
+  let newData = value
+  if (judgeRandomValue > 5) {
+    newData = value + parseInt((Math.random() * 12))
+  } else {
+    newData = value - parseInt((Math.random() * 12))
+  }
+  if (newData > 0) {
+    return newData
+  } else {
+    return 4
+  }
+}
+
+const updateSourceData = (sourceData) => {
+	const lineV = (sourceData.grid_info || {}).line_v_or || []
+  if (lineV.length) {
+    const newLineV = lineV.map(item => {
+      return randomValue(item)
+    })
+    return {
+      ...sourceData,
+      grid_info: {
+        ...sourceData.grid_info,
+        line_v_or: newLineV
+      }
+    }
+  }
+  return sourceData
+}
+
 export default data
 export {
-	transformSourceData
+	transformSourceData,
+  updateSourceData
 }

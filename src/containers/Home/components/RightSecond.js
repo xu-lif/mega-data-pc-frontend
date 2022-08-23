@@ -1,3 +1,4 @@
+import React from 'react'
 import { Column } from "@ant-design/plots";
 import styled from "styled-components";
 
@@ -151,4 +152,4 @@ const RightSecond = () => {
   );
 };
 
-export default RightSecond;
+export default React.memo(RightSecond);

@@ -12,7 +12,8 @@ const Ul = styled.ul`
   }
   & > li {
     display: flex;
-    justify-content: space-around;
+    justify-content: space-between;
+    padding: 0 10px;
     align-items: center;
     height: 56px;
     line-height: 56px;
@@ -60,18 +61,18 @@ const LinesList = ({
       })
     }
     return []
-  }, [lines, gridInfo])
+  }, [lines, gridInfo.line_v_or])
 
   console.log('list', list)
   
   return (
-    <BoxLayout title="输电线路率排行榜" style={{
+    <BoxLayout title="输电线线路负载率排行榜" style={{
       height: 'calc(100% - 224px)'
     }}>
       <Ul>
       {
         list.map((val, index) => {
-          if (parseFloat(val.v) > 50 && val.source.name && val.target.name) {
+          if (val.source.name && val.target.name) {
             return (
               <li>
                 <span>{index + 1}</span>

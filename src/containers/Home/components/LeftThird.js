@@ -2,6 +2,7 @@
 import styled from 'styled-components'
 
 import BoxLayout from "./BoxLayout";
+import PropTypes from 'prop-types'
 
 const ContentWrap = styled.div`
   display: flex;
@@ -55,10 +56,12 @@ const ConsumerPower = styled(CreatePower)`
   /* background: rgba(108, 67, 6, 0.38); */
 `
 
-const LeftThird = () => {
+const LeftThird = ({
+  data = {}
+}) => {
   
   return (
-    <BoxLayout title="当日累计电量占比">
+    <BoxLayout title="当前电量负荷情况">
       {/* <Liquid {...config} /> */}
       <div>
       <ContentWrap>
@@ -71,7 +74,9 @@ const LeftThird = () => {
             <li>
               发电量
             </li>
-            <li><i>654</i>kw</li>
+            <li><i>{
+              data.gen
+              }</i>kw</li>
           </ul>
         </CreatePower>
         <ConsumerPower
@@ -83,7 +88,7 @@ const LeftThird = () => {
             <li>
               用电量
             </li>
-            <li><i>234</i>kw</li>
+            <li><i>{data.load}</i>kw</li>
           </ul>
         </ConsumerPower>
       </ContentWrap>
@@ -91,5 +96,9 @@ const LeftThird = () => {
     </BoxLayout>
   );
 };
+
+LeftThird.propTypes = {
+  data: PropTypes.object
+}
 
 export default LeftThird;

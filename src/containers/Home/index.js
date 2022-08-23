@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import Map from "./Map";
 import styles from "./index.less";
@@ -14,14 +14,39 @@ import RightSecond from "./components/RightSecond";
 
 import CenterMap from './components/CenterMap'
 
-import sourceData, { transformSourceData } from "./data"; 
+import sourceData, { transformSourceData, updateSourceData } from "./data"; 
 
 
 const Home = () => {
+  const [data, setData] = useState(transformSourceData(sourceData))
+  const [curGenAndLoad, setCurGenAndLoad] = useState({
+    gen: 654,
+    load: 486
+  })
+  const timerRef = useRef()
 
-  const data = useMemo(() => {
-    return transformSourceData(sourceData)
+  useEffect(() => {
+    timerRef.current = setInterval(() => {
+      setData((oldVal) => {
+        return {
+          ...oldVal,
+          sourceData: updateSourceData(oldVal.sourceData)
+        }
+      })
+      setCurGenAndLoad(oldVal => {
+        return ({
+          gen: oldVal.gen + parseInt(Math.random() * 20) - 5,
+          load: oldVal.load + parseInt(Math.random() * 20) - 8          
+        })
+      })
+    }, 1000)
+    return () => {
+      if (timerRef.current) timerRef.current.clearInterval();
+    }
   }, [])
+
+  console.log('data', data)
+
 
   return (
     <div
@@ -41,17 +66,17 @@ const Home = () => {
       <Map/>
       <div className={styles.bodyWrap}>
         <div className={styles.leftWrap}>
-          <LeftFirst data={sourceData.gird_num_info}/>
-          <LinesList lines={data.lines} gridInfo={sourceData.grid_info}/>
+          <LeftFirst data={data.sourceData.gird_num_info}/>
+          <LinesList lines={data.lines} gridInfo={data.sourceData.grid_info}/>
           {/* <LeftThird /> */}
         </div>
         <div className={styles.centerWrap}>
-          <CenterMap data={data} gridInfo={sourceData.grid_info} gridLayout={sourceData.grid_layout} />
+          <CenterMap data={data} gridInfo={data.sourceData.grid_info} gridLayout={data.sourceData.grid_layout} />
         </div>
         <div className={styles.rightWrap}>
           <RightFirst />
           <RightSecond />
-          <LeftThird />
+          <LeftThird data={curGenAndLoad}/>
           {/* <LeftFour /> */}
 
           {/* <LeftFirst /> */}

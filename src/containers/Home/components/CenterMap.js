@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types'
 
 import ReactECharts from 'echarts-for-react';
-import React from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import { typesMsg } from '../utils';
 
@@ -22,12 +22,12 @@ import { typesMsg } from '../utils';
       return '#ff4d4f'
     }
     if (value > 50) {
-      return 'yellow'
+      return '#ffff00'
     }
     if (value > 0) {
       return '#47BC78'
     }
-    return 'rgba(1, 1, 1, 0.8)'
+    return '#000'
   }
 
   const getOptions = (lines = [], nodes = {}, gridInfo, gridLayout) => {
@@ -55,10 +55,8 @@ import { typesMsg } from '../utils';
           label: {
             normal: {
               show: true,
-              formatter: ({
-                name
-              }) => `${name} ${pValue ? `${pValue}MW` : ""}`,
-              color: "#fff",
+             
+              color: "#ffffff",
               position: 'bottom',
               distance : 2,
             }
@@ -71,6 +69,7 @@ import { typesMsg } from '../utils';
     // 拖尾曲线
     const trailLiens = []
     if (lines.length) {
+      console.log('lines', lines)
       lines.forEach((val, index) => {
         const lineV = parseInt(gridInfo.line_v_or[index] || '0', 10)
         const currentColor =  getLineColor(lineV)
@@ -113,7 +112,6 @@ import { typesMsg } from '../utils';
       })
 
     }
-    console.log('echartLines - trailLiens', echartLines, trailLiens)
     return (
       {
         backgroundColor: "transparent",
@@ -190,11 +188,26 @@ const CenterMap = ({
   gridInfo = {},
   gridLayout = {}
 }) => {
+  // const echartInstanceRef = useRef()
+  // const isMoutRef = useRef(true)
 
 
+  // useEffect(() => {
+  //   if (echartInstanceRef.current && !isMoutRef.current) {
+  //     console.log('render centerMap', echartInstanceRef.current.getEchartsInstance().setOption)
+
+  //     echartInstanceRef.current.getEchartsInstance().setOption(getOptions(lines, nodes, gridInfo, gridLayout), {
+  //       notMerge: true
+  //     })
+  //   }
+  //   isMoutRef.current = false
+  // })
   
   return (
-    <ReactECharts option={getOptions(lines, nodes, gridInfo, gridLayout)} style={{
+    <ReactECharts 
+      notMerge={true}
+      option={getOptions(lines, nodes, gridInfo, gridLayout)} 
+      style={{
       width: '100%',
       height: '100%'
     }}/>
